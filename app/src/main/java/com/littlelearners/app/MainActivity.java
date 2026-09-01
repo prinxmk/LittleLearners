@@ -2,7 +2,6 @@ package com.littlelearners.app;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -16,7 +15,6 @@ import java.util.Locale;
 public class MainActivity extends Activity {
   private TextToSpeech tts;
   private ToneGenerator tone;
-  private final Handler handler = new Handler();
 
   @Override public void onCreate(Bundle b) {
     super.onCreate(b);
@@ -24,9 +22,9 @@ public class MainActivity extends Activity {
     tone = new ToneGenerator(AudioManager.STREAM_MUSIC, 85);
     tts = new TextToSpeech(this, status -> {
       if (status == TextToSpeech.SUCCESS) {
-        tts.setLanguage(Locale.US);
-        tts.setSpeechRate(0.78f);
-        tts.setPitch(1.18f);
+        int result = tts.setLanguage(Locale.US);
+        tts.setSpeechRate(0.80f);
+        tts.setPitch(1.20f);
       }
     });
     WebView w = new WebView(this);
@@ -48,18 +46,16 @@ public class MainActivity extends Activity {
       if (tts != null) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ll-voice");
     }
     @JavascriptInterface public void cheer() {
-      playTone(ToneGenerator.TONE_PROP_ACK, 0);
-      handler.postDelayed(() -> playTone(ToneGenerator.TONE_PROP_BEEP2, 0), 120);
-      handler.postDelayed(() -> playTone(ToneGenerator.TONE_PROP_ACK, 0), 250);
+      if (tone == null) return;
+      tone.startTone(ToneGenerator.TONE_PROP_ACK, 120);
+      new android.os.Handler().postDelayed(() -> tone.startTone(ToneGenerator.TONE_PROP_BEEP2, 130), 140);
+      new android.os.Handler().postDelayed(() -> tone.startTone(ToneGenerator.TONE_PROP_ACK, 160), 300);
     }
     @JavascriptInterface public void tryAgain() {
-      playTone(ToneGenerator.TONE_PROP_NACK, 0);
+      if (tone != null) tone.startTone(ToneGenerator.TONE_PROP_NACK, 130);
     }
     @JavascriptInterface public void tap() {
-      playTone(ToneGenerator.TONE_PROP_BEEP, 0);
-    }
-    private void playTone(int toneType, int ignored) {
-      if (tone != null) tone.startTone(toneType, 100);
+      if (tone != null) tone.startTone(ToneGenerator.TONE_PROP_BEEP, 55);
     }
   }
 
